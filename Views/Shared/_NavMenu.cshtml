@@ -1,0 +1,34 @@
+﻿<nav class="container" x-data="{ desktopMenuOpen: false, mobileMenuOpen: false }">
+	<ul>
+		<li>
+			<a class="contrast" href="/">
+				@await Html.PartialAsync("_ApplicationLogo")
+			</a>
+		</li>
+	</ul>
+	<ul>
+		@if (User.Identity != null && User.Identity.IsAuthenticated)
+		{
+			<li>
+				<details role="list" dir="rtl">
+					<summary aria-haspopup="listbox" role="link">Account</summary>
+					<ul role="listbox">
+						<li><a href="/dashboard">Dashboard</a></li>
+						<li><a href="/account">Account</a></li>
+						<li>
+							<form asp-action="Logout" asp-controller="Auth" method="post">
+								<button type="submit">Logout</button>
+							</form>
+						</li>
+						<li><small>@User.Identity.Name</small></li>
+					</ul>
+				</details>
+			</li>
+		}
+		else
+		{
+			<li><a href="/login">Login</a></li>
+			<li><a href="/register" role="button">Register</a></li>
+		}
+	</ul>
+</nav>
