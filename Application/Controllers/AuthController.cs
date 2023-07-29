@@ -9,6 +9,9 @@ using System.Security.Claims;
 using InertiaSparkTest.Application.ViewModels;
 using InertiaSparkTest.Application.Events;
 using Coravel.Events.Interfaces;
+using InertiaCore;
+using System.Linq;
+using InertiaCore.Extensions;
 
 namespace InertiaSparkTest.Application.Controllers
 {
@@ -31,28 +34,32 @@ namespace InertiaSparkTest.Application.Controllers
         [Route("login")]
         public IActionResult Login()
         {
-            Login model = new Login();
-            return View(model);
+            var componentName = "Auth/Login";
+            //return whatever you want.
+            var data = new { };
+            //return Inertia Result.
+            return Inertia.Render(componentName, data);
         }
 
         [HttpPost, AllowAnonymous]
         [Route("login")]
-        public async Task<IActionResult> Login(Login request)
+        public async Task<IActionResult> Login([FromBody] Login request)
         {
             if (!ModelState.IsValid)
-                return View();
+                return Login();
 
             if (request == null)
             {
-                return BadRequest("user is not set.");
+                ModelState.AddModelError("Email", "User is not set.");
+                return Login();
             }
 
             var user = await _usersService.FindUserAsync(request.Email, _usersService.GetSha256Hash(request.Password));
 
             if (user == null)
             {
-                ModelState.AddModelError("FailedLogin", "Login Failed: Your email or password was incorrect");
-                return View();
+                ModelState.AddModelError("Email", "Login Failed: Your email or password was incorrect");
+                return Login();
             }
 
             var loginCookieExpirationDays = _configuration.GetValue("LoginCookieExpirationDays", 30);
@@ -68,35 +75,37 @@ namespace InertiaSparkTest.Application.Controllers
                     ExpiresUtc = DateTimeOffset.UtcNow.AddDays(loginCookieExpirationDays)
                 });
 
-            return Redirect("~/dashboard");
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet, AllowAnonymous]
         [Route("register")]
         public IActionResult Register()
         {
-            Register model = new Register();
-            return View(model);
+            var componentName = "Auth/Register";
+            var data = new { };
+            return Inertia.Render(componentName, data);
         }
 
         [HttpPost, AllowAnonymous]
         [Route("register")]
-        public async Task<IActionResult> Register(Register request)
+        public async Task<IActionResult> Register([FromBody] Register request)
         {
             if (!ModelState.IsValid)
-                return View();
+                return Register();
 
             if (request == null)
             {
-                return BadRequest("user is not set.");
+                ModelState.AddModelError("Email", "User is not set.");
+                return Register();
             }
 
             var existingUser = await _usersService.FindUserByEmailAsync(request.Email);
 
             if (existingUser != null)
             {
-                ModelState.AddModelError("EmailExists", "Email already in use by another account.");
-                return View();
+                ModelState.AddModelError("Email", "Email already in use.");
+                return Register();
             }
 
             var userForm = new User()
@@ -145,7 +154,8 @@ namespace InertiaSparkTest.Application.Controllers
         {
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(CultureInfo.InvariantCulture)));
-            identity.AddClaim(new Claim(ClaimTypes.Name, user.Email));
+            identity.AddClaim(new Claim(ClaimTypes.Name, user.Name));
+            identity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
             identity.AddClaim(new Claim(ClaimTypes.UserData, user.Id.ToString(CultureInfo.InvariantCulture)));
 
             // add roles

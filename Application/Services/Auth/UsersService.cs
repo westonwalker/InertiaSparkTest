@@ -61,6 +61,7 @@ namespace InertiaSparkTest.Application.Services.Auth
         public async Task<User?> FindUserByEmailAsync(string email)
         {
             return await _db.Users.FirstOrDefaultAsync(x => x.Email == email);
+            // Database.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
 
         public async Task<User> CreateUserAsync(User user)

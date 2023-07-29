@@ -1,13 +1,16 @@
 using Spark.Library.Environment;
 using Spark.Library.Config;
 using InertiaSparkTest.Application.Startup;
+using InertiaCore.Extensions;
+using System.Globalization;
+using InertiaSparkTest.Application.Middleware;
 
 EnvManager.LoadConfig();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.SetupSparkConfig();
-
 builder.Services.AddAppServices(builder.Configuration);
+builder.Services.AddInertia();
 
 var app = builder.Build();
 
@@ -21,10 +24,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseInertia();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseInertiaSharedProps();
 
 app.Services.RegisterScheduledJobs();
 app.Services.RegisterEvents();

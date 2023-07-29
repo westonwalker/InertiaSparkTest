@@ -12,6 +12,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Spark.InertiaJs" Version="0.0.2" />
     <PackageReference Include="Spark.Library" Version="0.6.0" />
   </ItemGroup>
 
